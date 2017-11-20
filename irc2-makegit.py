@@ -143,7 +143,6 @@ for version in sorted_versions:
         new_filename = os.path.join(git_dir, filename)
 
         shutil.move(original_filename, new_filename)
-        subprocess.run(['git', 'add', filename], cwd=git_dir)
 
     # get last modified time from changelog if it exists - more accurate
     changelog_path = os.path.join(git_dir, 'doc/ChangeLog')
@@ -186,14 +185,14 @@ for version in sorted_versions:
 
     git_env['GIT_AUTHOR_DATE'] = str(time_to_use)
     git_env['GIT_COMMITTER_DATE'] = str(time_to_use)
+    subprocess.run(['git', 'add', '.'], cwd=git_dir)  # add additions and deletions
     subprocess.run(['git', 'commit', '-m', 'irc{}'.format(version)], cwd=git_dir, env=git_env)
 
-    if version != sorted_versions[-1]:
-        for filename in extracted_file_list:
-            new_filename = os.path.join(git_dir, filename)
-            if os.path.isdir(new_filename):
-                shutil.rmtree(new_filename)
-            else:
-                os.remove(new_filename)
+    for filename in extracted_file_list:
+        new_filename = os.path.join(git_dir, filename)
+        if os.path.isdir(new_filename):
+            shutil.rmtree(new_filename)
+        else:
+            os.remove(new_filename)
 
     print('Extracted and committed irc{}'.format(version))
